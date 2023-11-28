@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
 import androidx.compose.material.IconButton
@@ -13,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -27,6 +29,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -48,7 +51,11 @@ fun AuthScreen(
     var password by remember { mutableStateOf("") }
     var showPassword by remember { mutableStateOf(false) }
     val error = state is AuthUiState.Error
+    val loading = state is AuthUiState.Loading
     val badCredentials = state is AuthUiState.BadCredentials
+    val textSizeDp = with(LocalDensity.current) {
+        MaterialTheme.typography.bodyMedium.lineHeight.toDp()
+    }
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
@@ -110,24 +117,35 @@ fun AuthScreen(
                 modifier = Modifier
                     .padding(horizontal = MaterialTheme.paddings.medium)
                     .fillMaxWidth(),
-                onClick = { viewModel.consumeAction(AuthUiAction.Login(login, password)) },
+                onClick = {
+                    if (!loading) viewModel.consumeAction(AuthUiAction.Login(login, password))
+                },
                 enabled = !error && login.isNotBlank() && password.isNotBlank()
             ) {
-                Text(
-                    text = stringResource(R.string.auth_title),
-                    color = if (!error && login.isNotBlank() && password.isNotBlank()) {
-                        MaterialTheme.colorScheme.onPrimary
-                    } else {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    }
-                )
+                if(loading) {
+                    CircularProgressIndicator(
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.size(textSizeDp)
+                    )
+                } else {
+                    Text(
+                        text = stringResource(R.string.auth_title),
+                        color = if (!error && login.isNotBlank() && password.isNotBlank()) {
+                            MaterialTheme.colorScheme.onPrimary
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        }
+                    )
+                }
             }
             if (badCredentials) {
                 Text(
                     text = stringResource(R.string.auth_bad_credentials),
                     style = MaterialTheme.typography.bodySmall,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth().padding(MaterialTheme.paddings.small)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(MaterialTheme.paddings.small)
                 )
             }
             if (error) {
@@ -135,7 +153,9 @@ fun AuthScreen(
                     text = (state as AuthUiState.Error).error.message.toString(),
                     style = MaterialTheme.typography.bodySmall,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth().padding(MaterialTheme.paddings.small)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(MaterialTheme.paddings.small)
                 )
             }
         }
