@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">AEON Test Task</string>
+    <string name="auth_title">Авторизация</string>
+    <string name="auth_login">Имя пользователя</string>
+    <string name="auth_password">Пароль</string>
+    <string name="payments_title">Платежи</string>
+    <string name="auth_bad_credentials">Ошибка авторизации. Неверный логин и/или пароль.</string>
+</resources>
